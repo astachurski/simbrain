@@ -32,9 +32,10 @@ import com.Ostermiller.util.CSVParser;
  * provides general methods for handling pairs of datasets and checking their integrity.
  */
 public abstract class Projector {
-
+    private static final Logger LOGGER = Logger.getLogger(Projector.class);
+    
     /** Logger. */
-    private Logger logger = Logger.getLogger(Projector.class);
+    private Logger logger = LOGGER;
 
      /**
       * A set of hi-d datapoints, each of which is an array of doubles
@@ -59,6 +60,15 @@ public abstract class Projector {
      */
     protected String addMethod;
 
+    private static int counter = 0;
+    private final int number = counter++;
+    
+    public Projector() {
+        LOGGER.debug("creating Projector: " + number);
+        
+        logger = Logger.getLogger(LOGGER.getName() + '.' + number);
+    }
+    
     /**
      * Initialize the projector with high and low-d data.
      *
@@ -67,9 +77,9 @@ public abstract class Projector {
      */
     public void init(final Dataset up, final Dataset down) {
 
-        if (logger == null) {
-            logger = Logger.getLogger(Projector.class);
-        }
+//        if (logger == null) {
+//            logger = Logger.getLogger(Projector.class);
+//        }
         logger.trace("In projector.init(up, down)");
 
         upstairs = up;
@@ -99,7 +109,13 @@ public abstract class Projector {
      */
     public void checkDatasets() {
         if ((upstairs == null) || (downstairs == null) || (upstairs.getNumPoints() == 0)) {
-            logger.debug("Could not invoke Projector.init()");
+            if (logger.isDebugEnabled()) {
+                logger.debug("Could not compare datasets");
+                logger.debug("upstairs null? " + (upstairs == null ? "yes" : "no"));
+                logger.debug("downstairs null? " + (downstairs == null ? "yes" : "no"));
+                if (upstairs != null) logger.debug("upstairs points: " + upstairs.getNumPoints());
+            }
+            
             return;
         }
 
@@ -118,7 +134,7 @@ public abstract class Projector {
      * Updates datasets from persistent forms of data.
      */
     public void postOpenInit() {
-        logger = Logger.getLogger(Projector.class);
+//        logger = Logger.getLogger(Projector.class);
         upstairs.postOpenInit();
         downstairs.postOpenInit();
     }
@@ -253,9 +269,12 @@ public abstract class Projector {
      * @param point point to be added
      */
     public void addDatapoint(final double[] point) {
-       // logger.debug("addDatapoint called");
+        logger.debug("addDatapoint called");
         // Add the upstairs point
         double tolerance = theSettings.getTolerance();
+        
+        logger.debug("adding datapoint with tolerance: " + tolerance);
+        
         if (upstairs.addPoint(point, tolerance)) {
             //For 1-d datasets plot points on a horizontal line
             double[] newPoint;

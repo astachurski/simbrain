@@ -56,7 +56,7 @@ import edu.umd.cs.piccolo.util.PBounds;
 public class GaugePanel extends PCanvas implements ActionListener {
 
     /** Logger. */
-    private Logger logger = Logger.getLogger(GaugePanel.class);
+    private static final Logger logger = Logger.getLogger(GaugePanel.class);
 
     /** Thread of type gauge. */
     private GaugeThread theThread;
@@ -384,6 +384,7 @@ public class GaugePanel extends PCanvas implements ActionListener {
 
         // Handle drop down list; Change current projection algorithm
         if (e1 instanceof JComboBox) {
+            
             stopThread();
 
             String selectedGauge = ((JComboBox) e1).getSelectedItem().toString();
@@ -403,6 +404,8 @@ public class GaugePanel extends PCanvas implements ActionListener {
                 errorBar.setVisible(false);
             }
 
+            logger.debug("checking projector's datasets");
+            
             proj.checkDatasets();
             setToolbarIterable(proj.isIterable());
             this.updateColors(this.isColorMode());

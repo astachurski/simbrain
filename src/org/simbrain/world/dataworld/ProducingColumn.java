@@ -31,7 +31,7 @@ public class ProducingColumn implements Producer, ProducingAttribute<Double> {
     /**
      * From consuming attribute.  Should not be used.
      */
-    public String getAttributeDescription() {
+    public String getName() {
         return "Column " + columnNumber;
     }
 

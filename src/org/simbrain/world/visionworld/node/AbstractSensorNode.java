@@ -24,14 +24,10 @@ import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.Stroke;
 
-import java.awt.event.ActionEvent;
-
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
-import javax.swing.AbstractAction;
 import javax.swing.JPopupMenu;
-import javax.swing.JMenuItem;
 
 import edu.umd.cs.piccolo.PCanvas;
 import edu.umd.cs.piccolo.PNode;
@@ -45,12 +41,7 @@ import edu.umd.cs.piccolox.util.PFixedWidthStroke;
 
 import org.apache.commons.lang.SystemUtils;
 
-import org.simbrain.util.StrokeUtils;
-
 import org.simbrain.world.visionworld.Sensor;
-
-import org.simbrain.world.visionworld.dialog.EditSensorDialog;
-
 
 /**
  * Abstract sensor node.
@@ -91,7 +82,6 @@ abstract class AbstractSensorNode
     /** True if this sensor node is selected. */
     private boolean selected = false;
 
-    /** Context menu. */
     private JPopupMenu contextMenu;
 
 
@@ -110,24 +100,15 @@ abstract class AbstractSensorNode
         setWidth(this.sensor.getReceptiveField().getWidth());
 
         contextMenu = new JPopupMenu("Context menu");
-        contextMenu.add(new EditSensorAction());
-        //contextMenu.add(new JMenuItem("Edit selected sensor(s)..."));
 
         setPaint(new Color(0, 0, 0, 0));
         setOutlinePaint(new Color(0, 0, 0, 0));
         setMouseoverPaint(new Color(80, 80, 80, 40));
-        setSelectedPaint(new Color(80, 80, 80, 80));
 
         addInputEventListener(new ToolTipTextUpdater());
         addInputEventListener(new ContextMenuEventHandler());
     }
 
-
-    /**
-     * Return the tool tip text for this sensor node.
-     *
-     * @return the tool tip text for this sensor node
-     */
     protected String getToolTipText() {
         StringBuffer sb = new StringBuffer();
         sb.append("Sensor");
@@ -135,9 +116,9 @@ abstract class AbstractSensorNode
         sb.append("\n  Filter:  ");
         sb.append(sensor.getFilter().getClass().getSimpleName());
         sb.append("\n  Receptive field:  ");
-        sb.append(sensor.getReceptiveField().getWidth());
-        sb.append("x");
         sb.append(sensor.getReceptiveField().getHeight());
+        sb.append("x");
+        sb.append(sensor.getReceptiveField().getWidth());
         sb.append("\n  Location:  (");
         sb.append(sensor.getReceptiveField().getX());
         sb.append(", ");
@@ -146,11 +127,6 @@ abstract class AbstractSensorNode
         return sb.toString();
     }
 
-    /**
-     * Return the context menu for this sensor node.
-     *
-     * @return the context menu for this sensor node
-     */
     protected JPopupMenu getContextMenu() {
         return contextMenu;
     }
@@ -163,15 +139,6 @@ abstract class AbstractSensorNode
      */
     public final Sensor getSensor() {
         return sensor;
-    }
-
-    /**
-     * Edit the sensor for this sensor node.
-     */
-    public final void edit() {
-        EditSensorDialog d = new EditSensorDialog(sensor);
-        d.setBounds(100, 100, 450, 500);
-        d.setVisible(true);
     }
 
     /**
@@ -329,14 +296,14 @@ abstract class AbstractSensorNode
         /** {@inheritDoc} */
         public void mouseEntered(final PInputEvent event) {
             //event.setHandled(true);
-            //setMouseover(true);
+            setMouseover(true);
             ((PCanvas) event.getComponent()).setToolTipText(getToolTipText());
         }
 
         /** {@inheritDoc} */
         public void mouseExited(final PInputEvent event) {
             //event.setHandled(true);
-            //setMouseover(false);
+            setMouseover(false);
             ((PCanvas) event.getComponent()).setToolTipText(null);
         }
     }
@@ -354,7 +321,8 @@ abstract class AbstractSensorNode
          * @param event event
          */
         private void showContextMenu(final PInputEvent event) {
-            //event.setHandled(true);
+
+            event.setHandled(true);
             JPopupMenu contextMenu = getContextMenu();
             Point2D canvasPosition = event.getCanvasPosition();
             contextMenu.show((PCanvas) event.getComponent(), (int) canvasPosition.getX(), (int) canvasPosition.getY());
@@ -362,6 +330,7 @@ abstract class AbstractSensorNode
 
         /** {@inheritDoc} */
         public void mousePressed(final PInputEvent event) {
+
             if (event.isPopupTrigger()) {
                 showContextMenu(event);
             }
@@ -369,29 +338,10 @@ abstract class AbstractSensorNode
 
         /** {@inheritDoc} */
         public void mouseReleased(final PInputEvent event) {
+
             if (event.isPopupTrigger()) {
                 showContextMenu(event);
             }
-        }
-    }
-
-    /**
-     * Edit sensor action.
-     */
-    private class EditSensorAction
-        extends AbstractAction {
-
-        /**
-         * Create a new edit sensor action.
-         */
-        EditSensorAction() {
-            super("Edit sensor...");
-        }
-
-
-        /** {@inheritDoc} */
-        public void actionPerformed(final ActionEvent event) {
-            edit();
         }
     }
 }

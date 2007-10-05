@@ -35,9 +35,16 @@ public interface VisionWorldModelListener
     void pixelMatrixChanged(VisionWorldModelEvent event);
 
     /**
-     * Notify this listener the sensor matrix changed in a vision world model.
+     * Notify this listener a sensor matrix was added to a vision world model.
      *
      * @param event vision world model event
      */
-    void sensorMatrixChanged(VisionWorldModelEvent event);
+    void sensorMatrixAdded(VisionWorldModelEvent event);
+
+    /**
+     * Notify this listener a sensor matrix was removed from a vision world model.
+     *
+     * @param event vision world model event
+     */
+    void sensorMatrixRemoved(VisionWorldModelEvent event);
 }

@@ -42,12 +42,12 @@ public final class SparseSensorMatrix
      * @param columns number of columns, must be <code>&gt;= 1</code>
      * @param receptiveFieldWidth receptive field width, must be <code>&gt;= 0</code>
      * @param receptiveFieldHeight receptive field height, must be <code>&gt;= 0</code>
-     * @param defaultFilter default filter
+     * @param filter filter, must not be null
      */
     public SparseSensorMatrix(final int rows, final int columns,
                               final int receptiveFieldWidth, final int receptiveFieldHeight,
-                              final Filter defaultFilter) {
-        super(receptiveFieldWidth, receptiveFieldHeight, defaultFilter);
+                              final Filter filter) {
+        super(receptiveFieldWidth, receptiveFieldHeight, filter);
         if (rows < 1) {
             throw new IllegalArgumentException("rows must be >= 1");
         }

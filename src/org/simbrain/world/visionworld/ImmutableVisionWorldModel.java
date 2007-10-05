@@ -18,6 +18,9 @@
  */
 package org.simbrain.world.visionworld;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Immutable implementation of VisionWorldModel.
  */
@@ -65,12 +68,22 @@ public final class ImmutableVisionWorldModel
     }
 
     /** {@inheritDoc} */
-    public SensorMatrix getSensorMatrix() {
-        return sensorMatrix;
+    public int getSensorMatrixCount() {
+        return 1;
     }
 
     /** {@inheritDoc} */
-    public void setSensorMatrix(final SensorMatrix sensorMatrix) {
-        throw new UnsupportedOperationException("setSensorMatrix operation not supported");
+    public void addSensorMatrix(final SensorMatrix sensorMatrix) {
+        throw new UnsupportedOperationException("addSensorMatrix operation not supported");
+    }
+
+    /** {@inheritDoc} */
+    public void removeSensorMatrix(final SensorMatrix sensorMatrix) {
+        throw new UnsupportedOperationException("removeSensorMatrix operation not supported");
+    }
+
+    /** {@inheritDoc} */
+    public List<SensorMatrix> getSensorMatrices() {
+        return Collections.unmodifiableList(Collections.singletonList(sensorMatrix));
     }
 }

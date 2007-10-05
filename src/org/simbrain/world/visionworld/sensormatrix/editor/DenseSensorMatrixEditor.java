@@ -184,13 +184,16 @@ public final class DenseSensorMatrixEditor
     }
 
     /** {@inheritDoc} */
-    public SensorMatrix createSensorMatrix(final Filter defaultFilter) throws SensorMatrixEditorException {
+    public SensorMatrix createSensorMatrix(final Filter filter) throws SensorMatrixEditorException {
+        if (filter == null) {
+            throw new SensorMatrixEditorException("filter must not be null");
+        }
         try {
             int r = Integer.valueOf(rows.getText());
             int c = Integer.valueOf(columns.getText());
             int h = Integer.valueOf(receptiveFieldHeight.getText());
             int w = Integer.valueOf(receptiveFieldWidth.getText());
-            return new DenseSensorMatrix(r, c, w, h, defaultFilter);
+            return new DenseSensorMatrix(r, c, w, h, filter);
         }
         catch (NumberFormatException e) {
             throw new SensorMatrixEditorException(e);

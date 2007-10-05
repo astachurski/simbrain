@@ -21,8 +21,8 @@ package org.simbrain.world.visionworld;
 import java.util.List;
 
 /**
- * A vision world model has exactly one pixel matrix and exactly
- * one sensor matrix.  Interested classes may receive notification
+ * A vision world model has exactly one pixel matrix and may have
+ * zero or more sensor matrices.  Interested classes may receive notification
  * of changes in a VisionWorldModel via the VisionWorldModelListener interface.
  *
  * @see VisionWorldModelListener
@@ -48,22 +48,39 @@ public interface VisionWorldModel {
     void setPixelMatrix(PixelMatrix pixelMatrix);
 
     /**
-     * Return the sensor matrix for this vision world model.
-     * The sensor matrix will not be null.
+     * Return the number of sensor matrices in this vision world model.
      *
-     * @return the sensor matrix for this vision world model
+     * @return the number of sensor matrices in this vision world model
      */
-    SensorMatrix getSensorMatrix();
+    int getSensorMatrixCount();
 
     /**
-     * Set the sensor matrix for this vision world model to <code>sensorMatrix</code>
-     * (optional operation).
+     * Add the specified sensor matrix to the list of sensor matrices for this
+     * vision world model (optional operation).
      *
-     * @param sensorMatrix sensor matrix for this vision world model, must not be null
-     * @throws UnsupportedOperationException if the <code>setSensorMatrix</code>
+     * @param sensorMatrix sensor matrix to add, must not be null
+     * @throws UnsupportedOperationException if the <code>addSensorMatrix</code>
      *    operation is not supported by this vision world model
      */
-    void setSensorMatrix(SensorMatrix sensorMatrix);
+    void addSensorMatrix(SensorMatrix sensorMatrix);
+
+    /**
+     * Remove the specified sensor matrix to the list of sensor matrices for this
+     * vision world model (optional operation).
+     *
+     * @param sensorMatrix sensor matrix to remove, must not be null
+     * @throws UnsupportedOperationException if the <code>removeSensorMatrix</code>
+     *    operation is not supported by this vision world model
+     */
+    void removeSensorMatrix(SensorMatrix sensorMatrix);
+
+    /**
+     * Return an unmodifiable list of sensor matrices in this vision world model.
+     * The list may be empty but will not be null.
+     *
+     * @return an unmodifiable list of sensor matrices for this vision world model
+     */
+    List<SensorMatrix> getSensorMatrices();
 
     /**
      * Add the specified vision world model listener.

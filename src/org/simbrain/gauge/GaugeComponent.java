@@ -216,17 +216,18 @@ public class GaugeComponent extends WorkspaceComponent implements ActionListener
      * @param e Action event
      */
     public void actionPerformed(final ActionEvent e) {
-        logger.debug("coupling menu item selected");
         // Handle Coupling wireup
         if (e.getSource() instanceof CouplingMenuItem) {
+            logger.debug("coupling menu item selected");
+            
             int oldDims = gaugePanel.getGauge().getDimensions();
             CouplingMenuItem m = (CouplingMenuItem) e.getSource();
             int newDims = m.getCouplingContainer().getProducers().size();
             gaugePanel.getGauge().resetCouplings(newDims);
-            Iterator producerIterator = m.getCouplingContainer().getProducers().iterator();
+            Iterator<Producer> producerIterator = m.getCouplingContainer().getProducers().iterator();
             for (Consumer consumer : this.getGaugePanel().getGauge().getConsumers()) {
                 if (producerIterator.hasNext()) {
-                    Coupling coupling = new Coupling(((Producer) producerIterator.next()).getDefaultProducingAttribute(), consumer.getDefaultConsumingAttribute());
+                    Coupling coupling = new Coupling(producerIterator.next().getDefaultProducingAttribute(), consumer.getDefaultConsumingAttribute());
                     this.getGaugePanel().getGauge().getCouplings().add(coupling);
                 }
             }
@@ -301,7 +302,6 @@ public class GaugeComponent extends WorkspaceComponent implements ActionListener
             projector.postOpenInit();
             this.getGaugePanel().getGauge().setCurrentProjector(projector);
             this.getGaugePanel().updateGraphics();
-            this.getGaugePanel().getGauge().resetCouplings(projector.getUpstairs().getDimensions());
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

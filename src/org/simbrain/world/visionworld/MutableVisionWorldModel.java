@@ -25,6 +25,10 @@ import java.awt.image.BufferedImage;
 
 import java.beans.PropertyChangeListener;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Mutable implementation of VisionWorldModel.
  */
@@ -34,14 +38,11 @@ public final class MutableVisionWorldModel
     /** Pixel matrix. */
     private PixelMatrix pixelMatrix;
 
-    /** Sensor matrix. */
-    private SensorMatrix sensorMatrix;
+    /** List of sensor matrices. */
+    private final List<SensorMatrix> sensorMatrices;
 
     /** Empty pixel matrix. */
     private static final PixelMatrix EMPTY_PIXEL_MATRIX = new EmptyPixelMatrix();
-
-    /** Empty sensor matrix. */
-    private static final SensorMatrix EMPTY_SENSOR_MATRIX = new EmptySensorMatrix();
 
 
     /**
@@ -50,7 +51,7 @@ public final class MutableVisionWorldModel
     public MutableVisionWorldModel() {
         super();
         this.pixelMatrix = EMPTY_PIXEL_MATRIX;
-        this.sensorMatrix = EMPTY_SENSOR_MATRIX;
+        this.sensorMatrices = new ArrayList<SensorMatrix>();
     }
 
 
@@ -72,20 +73,33 @@ public final class MutableVisionWorldModel
     }
 
     /** {@inheritDoc} */
-    public SensorMatrix getSensorMatrix() {
-        return sensorMatrix;
+    public int getSensorMatrixCount() {
+        return sensorMatrices.size();
     }
 
     /** {@inheritDoc} */
-    public void setSensorMatrix(final SensorMatrix sensorMatrix) {
+    public void addSensorMatrix(final SensorMatrix sensorMatrix) {
         if (sensorMatrix == null) {
             throw new IllegalArgumentException("sensorMatrix must not be null");
         }
-        SensorMatrix oldSensorMatrix = this.sensorMatrix;
-        this.sensorMatrix = sensorMatrix;
-        if (!oldSensorMatrix.equals(this.sensorMatrix)) {
-            fireSensorMatrixChanged(oldSensorMatrix, this.sensorMatrix);
+        if (sensorMatrices.add(sensorMatrix)) {
+            fireSensorMatrixAdded(sensorMatrix);
         }
+    }
+
+    /** {@inheritDoc} */
+    public void removeSensorMatrix(final SensorMatrix sensorMatrix) {
+        if (sensorMatrix == null) {
+            throw new IllegalArgumentException("sensorMatrix must not be null");
+        }
+        if (sensorMatrices.remove(sensorMatrix)) {
+            fireSensorMatrixRemoved(sensorMatrix);
+        }
+    }
+
+    /** {@inheritDoc} */
+    public List<SensorMatrix> getSensorMatrices() {
+        return Collections.unmodifiableList(sensorMatrices);
     }
 
     /**
@@ -151,48 +165,6 @@ public final class MutableVisionWorldModel
         public void removePropertyChangeListener(final String propertyName,
                                                  final PropertyChangeListener listener) {
             // empty
-        }
-    }
-
-    /**
-     * Empty sensor matrix.
-     */
-    private static class EmptySensorMatrix
-        implements SensorMatrix {
-
-        /** {@inheritDoc} */
-        public int rows() {
-            return 0;
-        }
-
-        /** {@inheritDoc} */
-        public int columns() {
-            return 0;
-        }
-
-        /** {@inheritDoc} */
-        public int getReceptiveFieldHeight() {
-            return 0;
-        }
-
-        /** {@inheritDoc} */
-        public int getReceptiveFieldWidth() {
-            return 0;
-        }
-
-        /** {@inheritDoc} */
-        public Filter getDefaultFilter() {
-            return new Filter() {
-                    /** {@inheritDoc} */
-                    public double filter(final BufferedImage image) {
-                        return 0.0d;
-                    }
-                };
-        }
-
-        /** {@inheritDoc} */
-        public Sensor getSensor(final int row, final int column) {
-            throw new IndexOutOfBoundsException("EmptySensorMatrix has no rows or columns");
         }
     }
 }

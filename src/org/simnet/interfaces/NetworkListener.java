@@ -91,9 +91,7 @@ public interface NetworkListener extends EventListener {
      * TODO: Perhaps later this can be generaliezd to "parameter change" events, if there are more such parameters.
      *
      */
-    void clampMenuChanged();
-
-    void clampBarChanged();
+    void clampChanged();
 
     void groupAdded(NetworkEvent event);
     

@@ -32,18 +32,16 @@ import java.util.Iterator;
 import java.util.Set;
 
 import javax.swing.Action;
-import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-import javax.swing.JRadioButton;
-import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.JToolTip;
 import javax.swing.ToolTipManager;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.log4j.Logger;
 import org.simbrain.network.actions.ClampNeuronsAction;
 import org.simbrain.network.actions.ClampWeightsAction;
 import org.simbrain.network.dialog.connect.ConnectionDialog;
@@ -73,7 +71,6 @@ import org.simbrain.network.nodes.subnetworks.LMSNetworkNode;
 import org.simbrain.network.nodes.subnetworks.SOMNode;
 import org.simbrain.network.nodes.subnetworks.StandardNetworkNode;
 import org.simbrain.network.nodes.subnetworks.WTANetworkNode;
-import org.simbrain.resource.ResourceManager;
 import org.simbrain.util.Comparator;
 import org.simbrain.util.JMultiLineToolTip;
 import org.simbrain.util.ToggleButton;
@@ -104,13 +101,13 @@ import edu.umd.cs.piccolo.PNode;
 import edu.umd.cs.piccolo.event.PInputEventListener;
 import edu.umd.cs.piccolo.util.PBounds;
 import edu.umd.cs.piccolo.util.PPaintContext;
-import edu.umd.cs.piccolox.nodes.PStyledText;
 
 /**
  * Network panel.
  */
 public final class NetworkPanel extends PCanvas implements NetworkListener, ActionListener {
-
+    private static final Logger LOGGER = Logger.getLogger(NetworkPanel.class);
+    
     /** The model neural-rootNetwork object. */
     private RootNetwork rootNetwork = new RootNetwork();
 
@@ -235,10 +232,6 @@ public final class NetworkPanel extends PCanvas implements NetworkListener, Acti
      * They are updated when the rootNetwork clamp status changes. */
     private ArrayList checkBoxes = new ArrayList();
 
-    /** A list of toggle buttons pertaining to "clamp" information.
-     * They are updated when the rootNetwork clamp status changes. */
-    private ArrayList toggleButton = new ArrayList();
-
     /** Beginning position used in calculating offsets for multiple pastes. */
     private Point2D beginPosition;
 
@@ -260,15 +253,13 @@ public final class NetworkPanel extends PCanvas implements NetworkListener, Acti
     /** Text object event handeler. */
     private TextEventHandler textHandle = new TextEventHandler(this);
 
-    /** Groups nodes together for ease of use. */
-    private ViewGroupNode vgn;
-
     /**
      * Create a new rootNetwork panel.
      */
     public NetworkPanel() {
-
         super();
+        
+        LOGGER.debug("creating a newtwork panel");
 
         // always render in high quality
         setDefaultRenderQuality(PPaintContext.HIGH_QUALITY_RENDERING);
@@ -368,9 +359,6 @@ public final class NetworkPanel extends PCanvas implements NetworkListener, Acti
         editMenu.addSeparator();
         editMenu.add(actionManager.getClearAction());
         editMenu.add(createSelectionMenu());
-        editMenu.addSeparator();
-        editMenu.add(actionManager.getGroupAction());
-        editMenu.add(actionManager.getUngroupAction());
         editMenu.addSeparator();
         editMenu.add(createAlignMenu());
         editMenu.add(createSpacingMenu());
@@ -581,33 +569,29 @@ public final class NetworkPanel extends PCanvas implements NetworkListener, Acti
      */
     protected JToolBar createClampToolBar() {
 
-        JButton button = new JButton();
-        button.setIcon(ResourceManager.getImageIcon("Clamp.png"));
-        final JPopupMenu menu = new JPopupMenu();
-        for (JToggleButton toggle : actionManager.getClampBarActions()) {
-            toggle.setText("");
-            menu.add(toggle);
-            toggleButton.add(toggle);
-        }
-        button.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JButton button = (JButton)e.getSource();
-                menu.show(button, 0, button.getHeight());
-            }
-        });
+//        JButton button = new JButton();
+//        button.setIcon(ResourceManager.getImageIcon("World.gif"));
+//        final JPopupMenu menu = new JPopupMenu();
+//        for (Action action : actionManager.getClampActions()) {
+//            menu.add(action);
+//        }
+//        button.addActionListener(new ActionListener() {
+//            public void actionPerformed(ActionEvent e) {
+//                JButton button = (JButton)e.getSource();
+//                menu.show(button, 0, button.getHeight());
+//            }
+//        });
 
-        button.setComponentPopupMenu(menu);
         JToolBar clampTools = new JToolBar();
 
-        clampTools.add(button);
-//        JToggleButton cbW = actionManager.getClampWeightsBarItem();
-//        toggleButton.add(cbW);
-//        clampTools.add(cbW);
-//        cbW.setText("");
-//        JToggleButton cbN = actionManager.getClampNeuronsBarItem();
-//        toggleButton.add(cbN);
-//        cbN.setText("");
-//        clampTools.add(cbN);
+        JCheckBoxMenuItem cbW = actionManager.getClampWeightsMenuItem();
+        checkBoxes.add(cbW);
+        clampTools.add(cbW);
+        cbW.setText("");
+        JCheckBoxMenuItem cbN = actionManager.getClampNeuronsMenuItem();
+        checkBoxes.add(cbN);
+        cbN.setText("");
+        clampTools.add(cbN);
 
         return clampTools;
     }
@@ -1246,7 +1230,8 @@ public final class NetworkPanel extends PCanvas implements NetworkListener, Acti
      * Add a new neuron.
      */
     public void addNeuron() {
-
+        LOGGER.debug("adding a neuron");
+        
         Point2D p;
         // If a neuron is selected, put this neuron to its left
         if (getSelectedNeurons().size() == 1) {
@@ -1662,7 +1647,7 @@ public final class NetworkPanel extends PCanvas implements NetworkListener, Acti
         }
         
         
-        vgn = new ViewGroupNode(this, elements);
+        ViewGroupNode vgn = new ViewGroupNode(this, elements);
         this.getLayer().addChild(vgn);
         this.setSelection(Collections.singleton(vgn));
     }
@@ -2016,21 +2001,7 @@ public final class NetworkPanel extends PCanvas implements NetworkListener, Acti
     /**
      * Update clamp toolbar buttons and menu items.
      */
-    public void clampBarChanged() {
-        for (Iterator j = toggleButton.iterator(); j.hasNext(); ) {
-            JToggleButton box = (JToggleButton) j.next();
-            if (box.getAction() instanceof ClampWeightsAction) {
-                box.setSelected(rootNetwork.getClampWeights());
-            } else if (box.getAction() instanceof ClampNeuronsAction) {
-                box.setSelected(rootNetwork.getClampNeurons());
-            }
-        }
-    }
-
-    /**
-     * Update clamp toolbar buttons and menu items.
-     */
-    public void clampMenuChanged() {
+    public void clampChanged() {
         for (Iterator j = checkBoxes.iterator(); j.hasNext(); ) {
             JCheckBoxMenuItem box = (JCheckBoxMenuItem) j.next();
             if (box.getAction() instanceof ClampWeightsAction) {
@@ -2415,11 +2386,4 @@ public final class NetworkPanel extends PCanvas implements NetworkListener, Acti
     public TextEventHandler getTextHandle() {
         return textHandle;
     }
-
-    /**
-     * @return View Group Node.
-     */
-	public ViewGroupNode getViewGroupNode() {
-		return vgn;
-	}
 }

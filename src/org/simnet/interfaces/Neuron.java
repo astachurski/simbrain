@@ -49,7 +49,6 @@ import org.simnet.neurons.StochasticNeuron;
 import org.simnet.neurons.ThreeValuedNeuron;
 import org.simnet.neurons.TraceNeuron;
 import org.simnet.synapses.SignalSynapse;
-import org.simnet.util.SimpleId;
 import org.simnet.util.UniqueID;
 
 
@@ -128,9 +127,6 @@ public abstract class Neuron implements Producer, Consumer {
 
     private ConsumingAttribute defaultConsumingAttribute;
 
-    //Iterator 
-    private SimpleId idGenerator = new SimpleId("Neuron", 1);
-
     /** List of neuron types. */
     private static String[] typeList = {AdditiveNeuron.getName(),
             BinaryNeuron.getName(), ClampedNeuron.getName(),
@@ -147,6 +143,7 @@ public abstract class Neuron implements Producer, Consumer {
      * set their parameters.
      */
     public Neuron() {
+        this.setId(UniqueID.get());
         setAttributeLists();
     }
 
@@ -158,6 +155,7 @@ public abstract class Neuron implements Producer, Consumer {
      * @param n Neuron
      */
     protected Neuron(final Neuron n) {
+        this.setId(UniqueID.get());
         setParentNetwork(n.getParentNetwork());
         setActivation(n.getActivation());
         setUpperBound(n.getUpperBound());
@@ -923,7 +921,7 @@ public abstract class Neuron implements Producer, Consumer {
     }
 
     private class ActivationAttribute implements ProducingAttribute<Double>, ConsumingAttribute<Double>{
-        public String getAttributeDescription() {
+        public String getName() {
             return "Activation";
         }
         public Double getValue() {
@@ -938,7 +936,7 @@ public abstract class Neuron implements Producer, Consumer {
     }
     
     private class UpperBoundAttribute implements ProducingAttribute<Double>, ConsumingAttribute<Double>{
-        public String getAttributeDescription() {
+        public String getName() {
             return "UpperBound";
         }
         public Double getValue() {

@@ -22,10 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.Action;
-import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JRadioButton;
-import javax.swing.JToggleButton;
 
 import org.simbrain.network.actions.AddGaugeAction;
 import org.simbrain.network.actions.AlignHorizontalAction;
@@ -38,7 +35,6 @@ import org.simbrain.network.actions.CloseNetworkAction;
 import org.simbrain.network.actions.CopyAction;
 import org.simbrain.network.actions.CutAction;
 import org.simbrain.network.actions.DeleteAction;
-import org.simbrain.network.actions.GroupAction;
 import org.simbrain.network.actions.IterateNetworkAction;
 import org.simbrain.network.actions.NewActorCriticNetworkAction;
 import org.simbrain.network.actions.NewBackpropNetworkAction;
@@ -82,7 +78,6 @@ import org.simbrain.network.actions.SpaceHorizontalAction;
 import org.simbrain.network.actions.SpaceVerticalAction;
 import org.simbrain.network.actions.StopNetworkAction;
 import org.simbrain.network.actions.TextEditModeAction;
-import org.simbrain.network.actions.UngroupAction;
 import org.simbrain.network.actions.ZoomEditModeAction;
 import org.simbrain.network.actions.connection.ShowConnectDialogAction;
 
@@ -98,7 +93,7 @@ import org.simbrain.network.actions.connection.ShowConnectDialogAction;
  * all actions hold a reference to the NetworkPanel, passed in via
  * their constructor.</p>
  */
-public final class NetworkActionManager {
+final class NetworkActionManager {
 
     /** Pan edit mode action. */
     private final Action panEditModeAction;
@@ -268,12 +263,6 @@ public final class NetworkActionManager {
     /** Sets the text object properties. */
     private final Action setTextPropertiesAction;
 
-    /** Groups selected nodes together. */
-    private final Action groupAction;
-
-    /** Ungroups selected nodes. */
-    private final Action ungroupAction;
-
     /** Reference to NetworkPanel. */
     private final NetworkPanel networkPanel;
 
@@ -365,9 +354,6 @@ public final class NetworkActionManager {
         newKwtaNetworkAction = new NewKwtaNetworkAction(networkPanel);
 
         showConnectDialogAction = new ShowConnectDialogAction(networkPanel);
-
-        groupAction = new GroupAction(networkPanel);
-        ungroupAction = new UngroupAction(networkPanel, networkPanel.getViewGroupNode());
     }
 
 
@@ -458,10 +444,6 @@ public final class NetworkActionManager {
                 newElmanNetworkAction, newHopfieldNetworkAction,
                 newKwtaNetworkAction, newLMSNetworkAction, newSOMNetworkAction,
                 newStandardNetworkAction, newWTANetworkAction });
-    }
-
-    public List<JToggleButton> getClampBarActions() {
-        return Arrays.asList(new JToggleButton[] {getClampNeuronsBarItem(), getClampWeightsBarItem()});
     }
 
     /**
@@ -681,17 +663,6 @@ public final class NetworkActionManager {
     }
 
     /**
-     * Return the clamp weight toggle button tool bar item.
-     *
-     * @return the clamp weight toggle button tool bar item
-     */
-    public JToggleButton getClampWeightsBarItem() {
-        JToggleButton actionWrapper = new JToggleButton(clampWeightsAction);
-        actionWrapper.setSelected(networkPanel.getRootNetwork().getClampWeights());
-        return actionWrapper;
-    }
-
-    /**
      * Return the show IO information check box menu item.
      *
      * @return the show IO information check box menu item
@@ -830,6 +801,8 @@ public final class NetworkActionManager {
         return newSOMNetworkAction;
         }
 
+
+
     /**
      * Return the clamp neurons check box menu item.
      *
@@ -837,17 +810,6 @@ public final class NetworkActionManager {
      */
     public JCheckBoxMenuItem getClampNeuronsMenuItem() {
         JCheckBoxMenuItem actionWrapper = new JCheckBoxMenuItem(clampNeuronsAction);
-        actionWrapper.setSelected(networkPanel.getRootNetwork().getClampNeurons());
-        return actionWrapper;
-    }
-
-    /**
-     * Return the clamp neurons check box menu item.
-     *
-     * @return the clamp neurons check box menu item
-     */
-    public JToggleButton getClampNeuronsBarItem() {
-        JToggleButton actionWrapper = new JToggleButton(clampNeuronsAction);
         actionWrapper.setSelected(networkPanel.getRootNetwork().getClampNeurons());
         return actionWrapper;
     }
@@ -965,20 +927,4 @@ public final class NetworkActionManager {
     public Action getSetTextPropertiesAction() {
         return setTextPropertiesAction;
     }
-
-
-	/**
-	 * @return the ungroupAction
-	 */
-	public Action getUngroupAction() {
-		return ungroupAction;
-	}
-
-
-	/**
-	 * @return the groupAction
-	 */
-	public Action getGroupAction() {
-		return groupAction;
-	}
 }

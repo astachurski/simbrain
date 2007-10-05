@@ -33,8 +33,8 @@ abstract class AbstractSensorMatrix
     /** Receptive field width. */
     private final int receptiveFieldWidth;
 
-    /** Default filter. */
-    private final Filter defaultFilter;
+    /** Filter. */
+    private final Filter filter;
 
 
     /**
@@ -43,20 +43,23 @@ abstract class AbstractSensorMatrix
      *
      * @param receptiveFieldWidth receptive field width, must be <code>&gt;= 0</code>
      * @param receptiveFieldHeight receptive field height, must be <code>&gt;= 0</code>
-     * @param defaultFilter default filter
+     * @param filter filter, must not be null
      */
     protected AbstractSensorMatrix(final int receptiveFieldWidth,
                                    final int receptiveFieldHeight,
-                                   final Filter defaultFilter) {
+                                   final Filter filter) {
         if (receptiveFieldWidth < 0) {
             throw new IllegalArgumentException("receptiveFieldWidth must be >= 0");
         }
         if (receptiveFieldWidth < 0) {
             throw new IllegalArgumentException("receptiveFieldHeight must be >= 0");
         }
+        if (filter == null) {
+            throw new IllegalArgumentException("filter must not be null");
+        }
         this.receptiveFieldHeight = receptiveFieldHeight;
         this.receptiveFieldWidth = receptiveFieldWidth;
-        this.defaultFilter = defaultFilter;
+        this.filter = filter;
     }
 
 
@@ -71,7 +74,7 @@ abstract class AbstractSensorMatrix
     }
 
     /** {@inheritDoc} */
-    public final Filter getDefaultFilter() {
-        return defaultFilter;
+    public final Filter getFilter() {
+        return filter;
     }
 }

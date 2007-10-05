@@ -23,6 +23,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.KeyStroke;
 
+import org.apache.log4j.Logger;
 import org.simbrain.network.NetworkPanel;
 import org.simbrain.resource.ResourceManager;
 
@@ -35,6 +36,7 @@ public final class NewNeuronAction
     /** Network panel. */
     private final NetworkPanel networkPanel;
 
+    private static final Logger LOGGER = Logger.getLogger(NewNeuronAction.class);
 
     /**
      * Create a new neuron action with the specified network panel.

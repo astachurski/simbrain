@@ -30,7 +30,12 @@ public class VisionWorldModelAdapter
     }
 
     /** {@inheritDoc} */
-    public void sensorMatrixChanged(final VisionWorldModelEvent event) {
+    public void sensorMatrixAdded(final VisionWorldModelEvent event) {
+        // empty
+    }
+
+    /** {@inheritDoc} */
+    public void sensorMatrixRemoved(final VisionWorldModelEvent event) {
         // empty
     }
 }

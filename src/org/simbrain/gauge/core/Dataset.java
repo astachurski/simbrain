@@ -30,7 +30,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.simbrain.util.Utils;
-import org.simnet.interfaces.RootNetwork;
 
 import Jama.Matrix;
 
@@ -48,7 +47,7 @@ import com.Ostermiller.util.CSVPrinter;
 public class Dataset {
 
     /** Logger. */
-    Logger logger = Logger.getLogger(Dataset.class);
+    private static final Logger logger = Logger.getLogger(Dataset.class);
 
     /**
      * The data.
@@ -852,7 +851,7 @@ public class Dataset {
      * Initializes Dataset from persitent data.
      */
     public void postOpenInit() {
-        logger = Logger.getLogger(Dataset.class);
+//        logger = Logger.getLogger(Dataset.class);
 
         clear();
 

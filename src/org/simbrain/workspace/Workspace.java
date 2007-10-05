@@ -62,7 +62,7 @@ public class Workspace extends JFrame implements WindowListener,
                                     ComponentListener, MenuListener, MouseListener {
 
     /** Log4j logger. */
-    private Logger logger = Logger.getLogger(Workspace.class);
+    private static final Logger logger = Logger.getLogger(Workspace.class);
 
     /** Desktop pane. */
     private JDesktopPane desktop;
@@ -169,39 +169,21 @@ public class Workspace extends JFrame implements WindowListener,
 
         bar.addSeparator();
         bar.add(actionManager.getNewNetworkAction());
-
-        // World menu button.
         JButton button = new JButton();
         button.setIcon(ResourceManager.getImageIcon("World.gif"));
-        final JPopupMenu worldMenu = new JPopupMenu();
+        final JPopupMenu menu = new JPopupMenu();
         for (Action action : actionManager.getNewWorldActions()) {
-            worldMenu.add(action);
+            menu.add(action);
         }
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JButton button = (JButton)e.getSource();
-                worldMenu.show(button, 0, button.getHeight());
+                menu.show(button, 0, button.getHeight());
             }
         });
-        button.setComponentPopupMenu(worldMenu);
+        button.setComponentPopupMenu(menu);
         bar.add(button);
-
-        // Gauge menu button.
-        button = new JButton();
-        button.setIcon(ResourceManager.getImageIcon("Gauge.png"));
-        final JPopupMenu gaugeMenu = new JPopupMenu();
-        for (Action action : actionManager.getGaugeActions()) {
-            gaugeMenu.add(action);
-        }
-        button.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JButton button = (JButton)e.getSource();
-                gaugeMenu.show(button, 0, button.getHeight());
-            }
-        });
-        button.setComponentPopupMenu(gaugeMenu);
-        bar.add(button);
-
+        bar.add(actionManager.getNewGaugeAction());
         bar.add(actionManager.getNewConsoleAction());
 
         return bar;
@@ -221,6 +203,8 @@ public class Workspace extends JFrame implements WindowListener,
      * TODO: Add other update methods.
      */
     public void globalUpdate() {
+        logger.debug("global update");
+        
         for (WorkspaceComponent component : componentList) {
             if (hasCouplings(component)) {
                 for (Coupling coupling : component.getCouplingContainer().getCouplings()) {
@@ -402,12 +386,12 @@ public class Workspace extends JFrame implements WindowListener,
     private JMenu createFileMenu() {
         JMenu fileMenu = new JMenu("File");
         fileMenu.addMenuListener(this);
-        for (Action action : actionManager.getOpenSaveWorkspaceActions()) {
-            fileMenu.add(action);
+        for (Iterator i = actionManager.getOpenSaveWorkspaceActions().iterator(); i.hasNext(); ) {
+            fileMenu.add((Action) i.next());
         }
         fileMenu.addSeparator();
-        for (Action action : actionManager.getImportExportActions()) {
-            fileMenu.add(action);
+        for (Iterator i = actionManager.getImportExportActions().iterator(); i.hasNext(); ) {
+            fileMenu.add((Action) i.next());
         }
         fileMenu.addSeparator();
         fileMenu.add(actionManager.getClearWorkspaceAction());
@@ -416,8 +400,8 @@ public class Workspace extends JFrame implements WindowListener,
         fileMenu.add(actionManager.getOpenGaugeAction());
 
         JMenu worldSubMenu = new JMenu("Open World");
-        for (Action action : actionManager.getOpenWorldActions()) {
-            worldSubMenu.add(action);
+        for (Iterator i = actionManager.getOpenWorldActions().iterator(); i.hasNext(); ) {
+            worldSubMenu.add((Action) i.next());
         }
         fileMenu.add(worldSubMenu);
         fileMenu.addSeparator();
@@ -433,14 +417,11 @@ public class Workspace extends JFrame implements WindowListener,
     private JMenu createInsertMenu() {
         JMenu insertMenu = new JMenu("Insert");
         insertMenu.add(actionManager.getNewNetworkAction());
-        JMenu newGaugeSubMenu = new JMenu("New Gauge");
-        for (Action action : actionManager.getGaugeActions()) {
-            newGaugeSubMenu.add(action);
-        }
-        insertMenu.add(newGaugeSubMenu);
+        insertMenu.add(actionManager.getNewGaugeAction());
+        insertMenu.add(actionManager.getNewPlotAction());
         JMenu newWorldSubMenu = new JMenu("New World");
-        for (Action action : actionManager.getNewWorldActions()) {
-            newWorldSubMenu.add(action);
+        for (Iterator i = actionManager.getNewWorldActions().iterator(); i.hasNext(); ) {
+            newWorldSubMenu.add((Action) i.next());
         }
         insertMenu.add(newWorldSubMenu);
         insertMenu.addSeparator();
@@ -477,14 +458,10 @@ public class Workspace extends JFrame implements WindowListener,
     private void createContextMenu() {
         contextMenu = new JPopupMenu();
         contextMenu.add(actionManager.getNewNetworkAction());
-        JMenu newGaugeSubMenu = new JMenu("New Gauge");
-        for (Action action : actionManager.getGaugeActions()) {
-            newGaugeSubMenu.add(action);
-        }
-        contextMenu.add(newGaugeSubMenu);
+        contextMenu.add(actionManager.getNewGaugeAction());
         JMenu newWorldSubMenu = new JMenu("New World");
-        for (Action action : actionManager.getNewWorldActions()) {
-            newWorldSubMenu.add(action);
+        for (Iterator i = actionManager.getNewWorldActions().iterator(); i.hasNext(); ) {
+            newWorldSubMenu.add((Action) i.next());
         }
         contextMenu.add(newWorldSubMenu);
         contextMenu.addSeparator();
@@ -1010,7 +987,7 @@ public class Workspace extends JFrame implements WindowListener,
     }
 
     /**
-     * Returns a menu containing all available consuming attributes.  Used to create couplings.
+     * Get a menu representing all available consumers.
      *
      * @param listener the component which will listens to the menu items in this menu
      * @return the menu containing all available consumers
@@ -1053,34 +1030,13 @@ public class Workspace extends JFrame implements WindowListener,
         JMenu producerListMenu = new JMenu("Producer lists");
         for (WorkspaceComponent component : componentList) {
             if ((component.getCouplingContainer() != null) && (component.getCouplingContainer().getProducers() != null)) {
-                CouplingMenuItem producerListItem = new CouplingMenuItem(component.getCouplingContainer(), CouplingMenuItem.EventType.PRODUCER_LIST);
+                CouplingMenuItem producerListItem = new CouplingMenuItem(component.getCouplingContainer());
                 producerListItem.setText(component.getName());
                 producerListItem.addActionListener(listener);
                 producerListMenu.add(producerListItem);
             }
         }
         return producerListMenu;
-    }
-
-    /**
-     * 
-     * Get a menu representing all components which have lists of consumers,
-     * which returns such a list.
-     *
-     * @param listener the component which will listens to the menu items in this menu
-     * @return the menu containing all available components with nonempty consumer lists
-     */
-    public JMenu getConsumerListMenu(final ActionListener listener) {
-        JMenu consumerListMenu = new JMenu("Consumer lists");
-        for (WorkspaceComponent component : componentList) {
-            if ((component.getCouplingContainer() != null) && (component.getCouplingContainer().getConsumers() != null)) {
-                CouplingMenuItem consumerListItem = new CouplingMenuItem(component.getCouplingContainer(), CouplingMenuItem.EventType.CONSUMER_LIST);
-                consumerListItem.setText(component.getName());
-                consumerListItem.addActionListener(listener);
-                consumerListMenu.add(consumerListItem);
-            }
-        }
-        return consumerListMenu;
     }
 
     /**

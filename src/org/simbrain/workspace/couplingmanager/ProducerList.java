@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import javax.swing.AbstractListModel;
 import javax.swing.ListModel;
 
-import org.simbrain.workspace.Consumer;
 import org.simbrain.workspace.Producer;
 
 /**
@@ -49,12 +48,5 @@ public class ProducerList extends AbstractListModel implements ListModel {
      */
     public void addElement(final Producer element) {
         producerList.add(element);
-    }
-
-    /**
-     * @return the consumerList
-     */
-    public ArrayList<Producer> asArrayList() {
-        return producerList;
     }
 }

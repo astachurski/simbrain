@@ -44,15 +44,13 @@ import edu.umd.cs.piccolo.event.PInputEvent;
 import edu.umd.cs.piccolo.util.PBounds;
 import edu.umd.cs.piccolo.util.PPaintContext;
 
+import org.simbrain.world.visionworld.action.AddSensorMatrixAction;
 import org.simbrain.world.visionworld.action.CreatePixelMatrixAction;
-import org.simbrain.world.visionworld.action.CreateSensorMatrixAction;
 import org.simbrain.world.visionworld.action.NormalViewAction;
-import org.simbrain.world.visionworld.action.PaintViewAction;
 import org.simbrain.world.visionworld.action.StackedViewAction;
 
+import org.simbrain.world.visionworld.dialog.AddSensorMatrixDialog;
 import org.simbrain.world.visionworld.dialog.CreatePixelMatrixDialog;
-import org.simbrain.world.visionworld.dialog.CreateSensorMatrixDialog;
-import org.simbrain.world.visionworld.dialog.EditSensorDialog;
 
 import org.simbrain.world.visionworld.node.PixelMatrixImageNode;
 import org.simbrain.world.visionworld.node.SensorMatrixNode;
@@ -76,20 +74,19 @@ public final class VisionWorld
     /** Selection listener. */
     private final SensorSelectionListener selectionListener;
 
-    /** Selection event handler. */
-    private final SelectionEventHandler selectionEventHandler;
-
-    /** True if selection event handler is installed. */
-    private boolean selectionEventHandlerInstalled;
+    /** Focus owner. */
+    private PNode focusOwner;
 
     /** Pixel matrix node. */
     private PixelMatrixImageNode pixelMatrixNode;
 
-    /** Sensor matrix node. */
-    private SensorMatrixNode sensorMatrixNode;
+    private double x, y;
 
     /** Map of sensor to sensor node. */
     private final Map<Sensor, SensorNode> sensorNodes;
+
+    /** Map of sensor matrix to sensor matrix node. */
+    private final Map<SensorMatrix, SensorMatrixNode> sensorMatrixNodes;
 
     /** View padding. */
     private static final double VIEW_PADDING = 10.0d;
@@ -106,7 +103,6 @@ public final class VisionWorld
             throw new IllegalArgumentException("model must not be null");
         }
         this.model = model;
-        this.sensorNodes = new HashMap<Sensor, SensorNode>();
 
         setOpaque(true);
         setBackground(Color.WHITE);
@@ -116,6 +112,9 @@ public final class VisionWorld
         removeInputEventListener(getPanEventHandler());
         removeInputEventListener(getZoomEventHandler());
 
+        sensorNodes = new HashMap<Sensor, SensorNode>();
+        sensorMatrixNodes = new HashMap<SensorMatrix, SensorMatrixNode>();
+
         createNodes();
         modelListener = new VisionWorldModelListener() {
 
@@ -123,25 +122,42 @@ public final class VisionWorld
                 public void pixelMatrixChanged(final VisionWorldModelEvent event) {
                     getLayer().removeChild(pixelMatrixNode);
                     pixelMatrixNode = new PixelMatrixImageNode(event.getPixelMatrix());
+                    //pixelMatrixNode.addInputEventListener(new FocusHandler(pixelMatrixNode));
+                    setFocusOwner(pixelMatrixNode);
                     selectionModel.clear();
                     getLayer().addChild(pixelMatrixNode);
-                    centerCamera();
                 }
 
                 /** {@inheritDoc} */
-                public void sensorMatrixChanged(final VisionWorldModelEvent event) {
-                    getLayer().removeChild(sensorMatrixNode);
-                    sensorMatrixNode = new SensorMatrixNode(event.getSensorMatrix());
+                public void sensorMatrixAdded(final VisionWorldModelEvent event) {
+                    SensorMatrix sensorMatrix = event.getSensorMatrix();
+                    SensorMatrixNode sensorMatrixNode = new SensorMatrixNode(sensorMatrix);
+                    //sensorMatrixNode.addInputEventListener(new MouseoverHighlighter(sensorMatrixNode));
+                    sensorMatrixNode.setTransparency(0.8f);
+                    x -= sensorMatrixNode.getWidth() / 10.0d;
+                    y += sensorMatrixNode.getHeight() / 10.0d;
+                    sensorMatrixNode.offset(x, y);
+                    sensorMatrixNodes.put(sensorMatrix, sensorMatrixNode);
+                    setFocusOwner(sensorMatrixNode);
                     selectionModel.clear();
                     getLayer().addChild(sensorMatrixNode);
-                    centerCamera();
-                    updateSensorNodes();
+                }
+
+                /** {@inheritDoc} */
+                public void sensorMatrixRemoved(final VisionWorldModelEvent event) {
+                    SensorMatrix sensorMatrix = event.getSensorMatrix();
+                    SensorMatrixNode sensorMatrixNode = sensorMatrixNodes.get(sensorMatrix);
+                    //focusPrevious();
+                    sensorMatrixNodes.remove(sensorMatrix);
+                    selectionModel.clear();
+                    getLayer().removeChild(sensorMatrixNode);
                 }
             };
 
         this.model.addModelListener(modelListener);
 
         selectionModel = new SensorSelectionModel(this);
+
         selectionListener = new SensorSelectionListener()
             {
                 /** {@inheritDoc} */
@@ -152,9 +168,7 @@ public final class VisionWorld
 
         selectionModel.addSensorSelectionListener(selectionListener);
 
-        selectionEventHandler = new SelectionEventHandler(this);
-        selectionEventHandlerInstalled = true;
-        addInputEventListener(selectionEventHandler);
+        addInputEventListener(new SelectionEventHandler(this));
     }
 
     /**
@@ -163,9 +177,19 @@ public final class VisionWorld
     private void createNodes() {
         PLayer layer = getLayer();
         pixelMatrixNode = new PixelMatrixImageNode(model.getPixelMatrix());
+        //pixelMatrixNode.addInputEventListener(new FocusHandler(pixelMatrixNode));
         layer.addChild(pixelMatrixNode);
-        sensorMatrixNode = new SensorMatrixNode(model.getSensorMatrix());
-        layer.addChild(sensorMatrixNode);
+
+        for (SensorMatrix sensorMatrix : model.getSensorMatrices()) {
+            SensorMatrixNode sensorMatrixNode = new SensorMatrixNode(sensorMatrix);
+            //sensorMatrixNode.addInputEventListener(new MouseoverHighlighter(sensorMatrixNode));
+            sensorMatrixNode.setTransparency(0.8f);
+            x -= sensorMatrixNode.getWidth() / 10.0d;
+            y += sensorMatrixNode.getHeight() / 10.0d;
+            sensorMatrixNode.offset(x, y);
+            sensorMatrixNodes.put(sensorMatrix, sensorMatrixNode);
+            layer.addChild(sensorMatrixNode);
+        }
     }
 
     /**
@@ -174,6 +198,8 @@ public final class VisionWorld
      * @param event sensor selection event
      */
     private void updateSelection(SensorSelectionEvent event) {
+
+        updateSensorNodes();
         Set<Sensor> selection = event.getSelection();
         Set<Sensor> oldSelection = event.getOldSelection();
         Set<Sensor> difference = new HashSet<Sensor>(oldSelection);
@@ -187,11 +213,9 @@ public final class VisionWorld
         }
     }
 
-    /**
-     * Update the map of sensor to sensor nodes.
-     */
     private void updateSensorNodes() {
         sensorNodes.clear();
+
         Collection allNodes = getLayer().getAllNodes();
         for (Iterator i = allNodes.iterator(); i.hasNext(); ) {
             PNode node = (PNode) i.next();
@@ -209,13 +233,33 @@ public final class VisionWorld
         PLayer layer = getLayer();
         PCamera camera = getCamera();
         PBounds fullBounds = layer.getFullBoundsReference();
-        double padding = Math.min(VIEW_PADDING, (model.getPixelMatrix().getWidth() * 0.1d));
-        PBounds paddedBounds = new PBounds(fullBounds.getX() - padding,
-                                           fullBounds.getY() - padding,
-                                           fullBounds.getHeight() + (2 * padding),
-                                           fullBounds.getWidth() + (2 * padding));
+        PBounds paddedBounds = new PBounds(fullBounds.getX() - VIEW_PADDING,
+                                           fullBounds.getY() - VIEW_PADDING,
+                                           fullBounds.getHeight() + (2 * VIEW_PADDING),
+                                           fullBounds.getWidth() + (2 * VIEW_PADDING));
         camera.animateViewToCenterBounds(paddedBounds, true, 0L);
     }
+
+    PNode getFocusOwner() {
+        return focusOwner;
+    }
+
+    void setFocusOwner(final PNode focusOwner) {
+        if ((pixelMatrixNode.equals(focusOwner)) || (sensorMatrixNodes.containsValue(focusOwner))) {
+            PNode oldFocusOwner = this.focusOwner;
+            this.focusOwner = focusOwner;
+            // also need to call setFocus(boolean) on pixelMatrixNode
+            firePropertyChange("focusOwner", oldFocusOwner, this.focusOwner);
+        }
+    }
+
+    /*
+    void focusNext() {
+    }
+
+    void focusPrevious() {
+    }
+    */
 
     /** {@inheritDoc} */
     public void repaint() {
@@ -251,53 +295,88 @@ public final class VisionWorld
     }
 
     /**
-     * Switch to the paint view.
-     */
-    public void paintView() {
-        sensorMatrixNode.setVisible(false);
-        sensorMatrixNode.setOffset(0.0d, 0.0d);
-        sensorMatrixNode.moveToBack();
-        pixelMatrixNode.moveToFront();
-        pixelMatrixNode.setFocus(true);
-        if (selectionEventHandlerInstalled) {
-            selectionEventHandlerInstalled = false;
-            removeInputEventListener(selectionEventHandler);
-        }
-        centerCamera();
-    }
-
-    /**
      * Switch to the normal view.
      */
     public void normalView() {
-        sensorMatrixNode.setVisible(true);
-        sensorMatrixNode.moveToFront();
-        sensorMatrixNode.setOffset(0.0d, 0.0d);
-        if (pixelMatrixNode.hasFocus()) {
-            pixelMatrixNode.setFocus(false);
-        }
-        if (!selectionEventHandlerInstalled) {
-            selectionEventHandlerInstalled = true;
-            addInputEventListener(selectionEventHandler);
-        }
-        centerCamera();
+        // empty
     }
 
     /**
      * Switch to the stacked view.
      */
     public void stackedView() {
-        sensorMatrixNode.setVisible(true);
-        sensorMatrixNode.moveToFront();
-        sensorMatrixNode.setOffset(sensorMatrixNode.getWidth() * -0.1d, sensorMatrixNode.getHeight() * 0.1d);
-        if (pixelMatrixNode.hasFocus()) {
-            pixelMatrixNode.setFocus(false);
+        // empty
+    }
+
+    /**
+     * Mouseover highlighter.
+     */
+    private class MouseoverHighlighter
+        extends PBasicInputEventHandler {
+
+        /** Node for this mouseover highlighter. */
+        private final SensorMatrixNode node;
+
+
+        /**
+        * Create a new mouseover highlighter for the specified node.
+        *
+        * @param node node
+        */
+        MouseoverHighlighter(final SensorMatrixNode node) {
+            super();
+            this.node = node;
         }
-        if (!selectionEventHandlerInstalled) {
-            selectionEventHandlerInstalled = true;
-            addInputEventListener(selectionEventHandler);
+
+
+        /** {@inheritDoc} */
+        public void mouseEntered(final PInputEvent event) {
+            node.setTransparency(1.0f);
+            node.moveToFront();
         }
-        centerCamera();
+
+        /** {@inheritDoc} */
+        public void mouseExited(final PInputEvent event) {
+            node.setTransparency(0.6f);
+        }
+    }
+
+    /**
+     * Focus handler.
+     */
+    private class FocusHandler
+        extends PBasicInputEventHandler {
+
+        /** Node for this focus handler. */
+        private final PixelMatrixImageNode node;
+
+
+        /**
+         * Create a new focus handler for the specified node.
+         *
+         * @param node node
+         */
+        FocusHandler(final PixelMatrixImageNode node) {
+            super();
+            this.node = node;
+            node.setOutlinePaint(Color.BLACK);
+        }
+
+
+        /** {@inheritDoc} */
+        public void mouseEntered(final PInputEvent event) {
+            node.setFocus(true);
+            node.moveToFront();
+            node.setOutlinePaint(Color.RED);
+            node.repaint();
+        }
+
+        /** {@inheritDoc} */
+        public void mouseExited(final PInputEvent event) {
+            node.setFocus(false);
+            node.setOutlinePaint(Color.BLACK);
+            node.repaint();
+        }
     }
 
     /**
@@ -312,8 +391,8 @@ public final class VisionWorld
     /**
      * Add sensor matrix.
      */
-    public void createSensorMatrix() {
-        CreateSensorMatrixDialog d = new CreateSensorMatrixDialog(this);
+    public void addSensorMatrix() {
+        AddSensorMatrixDialog d = new AddSensorMatrixDialog(this);
         d.setBounds(100, 100, 450, 550);
         d.setVisible(true);
     }
@@ -324,7 +403,7 @@ public final class VisionWorld
      * @return a list of file menu actions for this vision world
      */
     public List<Action> getFileMenuActions() {
-        return Arrays.asList(new Action[] {new CreatePixelMatrixAction(this), new CreateSensorMatrixAction(this)});
+        return Arrays.asList(new Action[] {new AddSensorMatrixAction(this), new CreatePixelMatrixAction(this) });
     }
 
     /**
@@ -342,6 +421,6 @@ public final class VisionWorld
      * @return a list of view menu actions for this vision world
      */
     public List<Action> getViewMenuActions() {
-        return Arrays.asList(new Action[] {new NormalViewAction(this), new StackedViewAction(this), new PaintViewAction(this)});
+        return Arrays.asList(new Action[] { new NormalViewAction(this), new StackedViewAction(this) });
     }
 }

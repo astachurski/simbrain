@@ -26,7 +26,6 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.simnet.synapses.SignalSynapse;
 import org.simnet.util.CopyFactory;
-import org.simnet.util.SimpleId;
 import org.simnet.util.UniqueID;
 
 
@@ -38,7 +37,7 @@ import org.simnet.util.UniqueID;
 public abstract class Network {
 
     /** Logger. */
-    Logger logger = Logger.getLogger(Network.class);
+    private static final Logger logger = Logger.getLogger(Network.class);
 
     /** Reference to root network. */
     private RootNetwork rootNetwork = null;
@@ -67,6 +66,9 @@ public abstract class Network {
     /** Only used for sub-nets of complex networks which have parents. */
     private Network parentNet = null;
 
+    /** Provides default initialization to network ids. */
+//    private static int counter = 0;
+
     /**
      *  Sequence in which the update function should be called
      *  for this sub-network. By default, this is set to 0 for all
@@ -75,10 +77,12 @@ public abstract class Network {
      */
     private int updatePriority = 0;
 
+
     /**
      * Used to create an instance of network (Default constructor).
      */
     public Network() {
+        this.setId(UniqueID.get());
     }
 
     /**
@@ -91,7 +95,7 @@ public abstract class Network {
      */
     public void updateAllNetworks() {
         logger.debug("updating " + networkList.size() + " networks");
-
+        
         for (Network network : networkList) {
             logger.debug("updating network: " + network);
             network.update();
@@ -181,7 +185,7 @@ public abstract class Network {
      */
     protected void postUnmarshallingInit(){
 
-        logger = Logger.getLogger(RootNetwork.class);
+//        logger = Logger.getLogger(RootNetwork.class);
 
         for (Network network : getNetworkList()) {
             network.postUnmarshallingInit();
@@ -322,6 +326,8 @@ public abstract class Network {
      * @param neuron Type of neuron to add
      */
     public void addNeuron(final Neuron neuron) {
+        logger.debug("adding a neuron");
+        
         addNeuron(neuron, true);
     }
 
@@ -338,7 +344,6 @@ public abstract class Network {
             rootNetwork.fireNeuronAdded(neuron);
         }
         neuron.postUnmarshallingInit();
-        neuron.setId(getRootNetwork().getNeuronIdGenerator().getId());
     }
 
     /**
@@ -365,7 +370,7 @@ public abstract class Network {
     private void addSynapse(final Synapse synapse, final boolean notify) {
         synapse.setParentNetwork(this);
         Neuron target = (Neuron) synapse.getTarget();
-
+        
         if (synapse instanceof SignalSynapse) {
             target.setTargetValueSynapse((SignalSynapse) synapse);
         }
@@ -392,9 +397,12 @@ public abstract class Network {
     public void updateAllNeurons() {
 
         if (rootNetwork.getClampNeurons()) {
+            logger.debug("clamped - not updating neurons");
             return;
         }
 
+        logger.debug("updating " + neuronList.size() + " neurons");
+        
         // First update the activation buffers
         for (Neuron n : neuronList) {
             n.update(); // update neuron buffers
@@ -412,9 +420,12 @@ public abstract class Network {
     public void updateAllSynapses() {
 
         if (rootNetwork.getClampWeights()) {
+            logger.debug("clamped - not updating synapses");
             return;
         }
 
+        logger.debug("updating: " + synapseList.size() + " synapses");
+        
         // No Buffering necessary because the values of weights don't depend on one another
         for (Synapse s : synapseList) {
             s.update();
@@ -874,7 +885,6 @@ public abstract class Network {
         if (notify) {
             getRootNetwork().fireSubnetAdded(n);
         }
-        setId(getRootNetwork().getNetworkIdGenerator().getId());
     }
 
     /**

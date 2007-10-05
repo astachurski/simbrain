@@ -56,12 +56,12 @@ public interface SensorMatrix {
     int getReceptiveFieldWidth();
 
     /**
-     * Return the default filter for the sensors in this sensor matrix, if any.
+     * Return the filter for the sensors in this sensor matrix, if any.
+     * The filter will not be null.
      *
-     * @return the default filter for the sensors in this sensor matrix or
-     *    <code>null</code> if one has not been defined
+     * @return the filter for the sensors in this sensor matrix, if any
      */
-    Filter getDefaultFilter();
+    Filter getFilter();
 
     /**
      * Return the sensor in this sensor matrix at the specified row and column, if any.

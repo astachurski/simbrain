@@ -60,24 +60,6 @@ public final class Sensor
     /** List of producing attributes. */
     private final List<ProducingAttribute> producingAttributes = Arrays.asList(new ProducingAttribute[] { new SampleAttribute() });
 
-    /** No filter. */
-    private static final Filter NO_FILTER = new Filter()
-        {
-            /** {@inheritDoc} */
-            public double filter(final BufferedImage image) {
-                return 0.0d;
-            }
-        };
-
-
-    /** 
-     * Create a new sensor with the specified receptive field and no filter.
-     *
-     * @param receptiveField receptive field for this sensor, must not be null
-     */
-    public Sensor(final ReceptiveField receptiveField) {
-        this(NO_FILTER, receptiveField);
-    }
 
     /**
      * Create a new sensor with the specified filter and receptive field.
@@ -261,7 +243,7 @@ public final class Sensor
         }
 
         /** {@inheritDoc} */
-        public String getAttributeDescription() {
+        public String getName() {
             return "Sample";
         }
 

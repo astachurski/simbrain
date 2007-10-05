@@ -56,9 +56,9 @@ import org.simbrain.world.visionworld.sensormatrix.editor.SensorMatrixEditors;
 import org.simbrain.world.visionworld.sensormatrix.editor.SensorMatrixEditorException;
 
 /**
- * Create sensor matrix dialog.
+ * Add sensor matrix dialog.
  */
-public final class CreateSensorMatrixDialog
+public final class AddSensorMatrixDialog
     extends JDialog {
 
     /** Filters. */
@@ -102,18 +102,18 @@ public final class CreateSensorMatrixDialog
 
 
     /**
-     * Create a new create sensor matrix dialog.
+     * Create a new add sensor matrix dialog.
      *
      * @param visionWorld vision world, must not be null
      */
-    public CreateSensorMatrixDialog(final VisionWorld visionWorld) {
+    public AddSensorMatrixDialog(final VisionWorld visionWorld) {
         super();
         if (visionWorld == null) {
             throw new IllegalArgumentException("visionWorld must not be null");
         }
         this.visionWorld = visionWorld;
 
-        setTitle("Create Sensor Matrix");
+        setTitle("Add Sensor Matrix");
         initComponents();
         layoutComponents();
     }
@@ -209,7 +209,7 @@ public final class CreateSensorMatrixDialog
         c.gridy = 0;
         c.weightx = 0.33f;
         c.weighty = 0;
-        panel.add(new JLabel("Default filter"), c);
+        panel.add(new JLabel("Filter"), c);
 
         c.insets = FIELD_INSETS;
         c.gridx = 1;
@@ -320,7 +320,7 @@ public final class CreateSensorMatrixDialog
             sensorMatrices.requestFocus();
         }
 
-        visionWorld.getModel().setSensorMatrix(sensorMatrix);
+        visionWorld.getModel().addSensorMatrix(sensorMatrix);
         setVisible(false);
     }
 

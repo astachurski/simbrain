@@ -1,5 +1,7 @@
 package org.simbrain.workspace;
 
+import org.apache.log4j.Logger;
+
 
 /**
  * Coupling between a producing attribute and a consuming attribute.
@@ -7,7 +9,8 @@ package org.simbrain.workspace;
  * @param <E> coupling attribute value type
  */
 public final class Coupling<E> {
-
+    private static final Logger LOGGER = Logger.getLogger(Coupling.class);
+    
     /** Producing attribute for this coupling. */
     private ProducingAttribute<E> producingAttribute;
 
@@ -37,11 +40,13 @@ public final class Coupling<E> {
      */
     public Coupling(final ProducingAttribute<E> producingAttribute,
                     final ConsumingAttribute<E> consumingAttribute) {
-
+        LOGGER.debug("creating a new Coupling");
+        LOGGER.trace("producingAttribute: " + producingAttribute);
+        LOGGER.trace("consumingAttribute: " + consumingAttribute);
+        
         this.producingAttribute = producingAttribute;
         this.consumingAttribute = consumingAttribute;
     }
-
 
     /**
      * Set value of buffer.
@@ -54,6 +59,7 @@ public final class Coupling<E> {
      * Update this coupling.
      */
     public void update() {
+        LOGGER.debug("updating coupling");
         if ((consumingAttribute != null) && (producingAttribute != null)) {
             consumingAttribute.setValue(buffer);
             //System.out.println(consumingAttribute.getParent().getConsumerDescription() + " just consumed " + producingAttribute.getValue() + " from " + producingAttribute.getParent().getProducerDescription());

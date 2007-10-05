@@ -32,10 +32,7 @@ public final class VisionWorldModelEvent
     /** Pixel matrix. */
     private final PixelMatrix pixelMatrix;
 
-    /** Old sensor matrix. */
-    private final SensorMatrix oldSensorMatrix;
-
-    /** Sensor matrix. */
+    /** Sensor matrix added or removed. */
     private final SensorMatrix sensorMatrix;
 
 
@@ -58,7 +55,6 @@ public final class VisionWorldModelEvent
         }
         this.oldPixelMatrix = oldPixelMatrix;
         this.pixelMatrix = pixelMatrix;
-        this.oldSensorMatrix = null;
         this.sensorMatrix = null;
     }
 
@@ -66,22 +62,16 @@ public final class VisionWorldModelEvent
      * Create a new vision world model event with the specified event source.
      *
      * @param source source of this event, must not be null
-     * @param oldSensorMatrix old pixel matrix, must not be null
-     * @param sensorMatrix pixel matrix, must not be null
+     * @param sensorMatrix sensor matrix added or removed, must not be null
      */
     public VisionWorldModelEvent(final VisionWorldModel source,
-                                 final SensorMatrix oldSensorMatrix,
                                  final SensorMatrix sensorMatrix) {
         super(source);
-        if (oldSensorMatrix == null) {
-            throw new IllegalArgumentException("oldSensorMatrix must not be null");
-        }
         if (sensorMatrix == null) {
             throw new IllegalArgumentException("sensorMatrix must not be null");
         }
         this.oldPixelMatrix = null;
         this.pixelMatrix = null;
-        this.oldSensorMatrix = oldSensorMatrix;
         this.sensorMatrix = sensorMatrix;
     }
 
@@ -115,18 +105,11 @@ public final class VisionWorldModelEvent
     }
 
     /**
-     * Return the old sensor matrix for this vision world model event, if any.
+     * Return the added or removed sensor matrix for this vision world
+     * model event, if any.
      *
-     * @return the old sensor matrix for this vision world model event, if any
-     */
-    public SensorMatrix getOldSensorMatrix() {
-        return oldSensorMatrix;
-    }
-
-    /**
-     * Return the sensor matrix for this vision world model event, if any.
-     *
-     * @return the sensor matrix for this vision world model event, if any
+     * @return the added or removed sensor matrix for this vision world
+     *    model event, if any
      */
     public SensorMatrix getSensorMatrix() {
         return sensorMatrix;

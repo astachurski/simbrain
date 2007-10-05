@@ -41,7 +41,7 @@ public final class UniqueID {
      *
      * @return a unique identification
      */
-    public static synchronized String getId() {
+    public static synchronized String get() {
         return "" + current++;
     }
 }

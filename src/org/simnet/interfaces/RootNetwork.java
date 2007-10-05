@@ -20,10 +20,7 @@ package org.simnet.interfaces;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -31,15 +28,12 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import javax.swing.JOptionPane;
-
 import org.apache.log4j.Logger;
 import org.simbrain.workspace.Consumer;
 import org.simbrain.workspace.Coupling;
 import org.simbrain.workspace.CouplingContainer;
 import org.simbrain.workspace.Producer;
 import org.simnet.NetworkThread;
-import org.simnet.util.SimpleId;
 
 import bsh.EvalError;
 import bsh.Interpreter;
@@ -56,9 +50,9 @@ import bsh.Interpreter;
 public class RootNetwork extends Network implements CouplingContainer {
 
     /** Log4j logger. */
-    private Logger logger = Logger.getLogger(RootNetwork.class);
+    private static final Logger logger = Logger.getLogger(RootNetwork.class);
 
-    /** Since groups span all levels of the hierarchy they are stored here. */
+    /** Since groups span all levels of the hierarcy they are stored here. */
     private ArrayList<Group> groupList = new ArrayList<Group>();
 
     /** Whether network has been updated yet; used by thread. */
@@ -113,7 +107,7 @@ public class RootNetwork extends Network implements CouplingContainer {
     private UpdateMethod updateMethod = UpdateMethod.DEFAULT;
 
     /**
-     * The updatePriority values used by neurons and sub-layers
+     * The updatePriority valuse used by neurons and sub-layers
      *  is stored in this set.
      */
     private SortedSet<Integer> updatePriorities = null;
@@ -121,11 +115,6 @@ public class RootNetwork extends Network implements CouplingContainer {
     /** List of couplings. */
     private ArrayList<Coupling> couplings = new ArrayList<Coupling>();
 
-    /** Name generator. */
-    private SimpleId networkIdGenerator = new SimpleId("Netork", 1);
-
-    /** Name generator. */
-    private SimpleId neuronIdGenerator = new SimpleId("Neuron", 1);
 
     /**
      * Used to create an instance of network (Default constructor).
@@ -135,18 +124,14 @@ public class RootNetwork extends Network implements CouplingContainer {
         setRootNetwork(this);
         this.updatePriorities = new TreeSet<Integer>();
         this.updatePriorities.add(new Integer(0));
-        this.setId("Root-network");
     }
 
     /**
-     * Perform initialization required after opening saved networks.
+     * Perform intialization required after opening saved networks.
      */
     public void postUnmarshallingInit(NetworkListener listener) {
 
-        logger = Logger.getLogger(RootNetwork.class);
-
-        neuronIdGenerator = new SimpleId("Neuron", 1);
-        networkIdGenerator = new SimpleId("Netork", 1);
+//        logger = Logger.getLogger(RootNetwork.class);
 
         if (this instanceof RootNetwork) {
             listenerList = new HashSet<NetworkListener>();
@@ -227,7 +212,7 @@ public class RootNetwork extends Network implements CouplingContainer {
     }
 
     public void updateCouplings() {
-        logger.debug("updateCouplings called");
+        logger.debug("updating: " + couplings.size() + " couplings");
         for (Coupling coupling : getCouplings()) {
             logger.debug("updating coupling: " + coupling);
             coupling.update();
@@ -518,8 +503,7 @@ public class RootNetwork extends Network implements CouplingContainer {
      */
     public void fireClampChanged() {
         for (NetworkListener listener : getListenerList()) {
-            listener.clampMenuChanged();
-            listener.clampBarChanged();
+            listener.clampChanged();
         }
     }
 
@@ -857,24 +841,6 @@ public class RootNetwork extends Network implements CouplingContainer {
      */
     public List<Producer> getProducers() {
         return new ArrayList<Producer>(getFlatNeuronList());
-    }
-
-    /**
-     * Return the generator for neuron ids.
-     *
-     * @return the generator
-     */
-    public SimpleId getNeuronIdGenerator() {
-        return neuronIdGenerator;
-    }
-
-    /**
-     * Return the generator for network ids.
-     *
-     * @return the generator.
-     */
-    public SimpleId getNetworkIdGenerator() {
-        return networkIdGenerator;
     }
 
 }

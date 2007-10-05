@@ -41,7 +41,7 @@ public class ResourceManager {
         ImageIcon imageIcon;
         URL url;
 
-        url = ResourceManager.class.getResource(name);
+        url = ClassLoader.getSystemResource(name);
         imageIcon = new ImageIcon(url);
 
         return imageIcon;
@@ -54,13 +54,20 @@ public class ResourceManager {
      *
      * @return the Image which can be used with Swing components, etc
      */
+//    public static Image getImage(final String name) {
+//        URL url;
+//
+//        url = ResourceManager.class.getResource(name);
+//
+//        java.awt.Toolkit toolKit = java.awt.Toolkit.getDefaultToolkit();
+//
+//        return toolKit.getImage(url);
+//    }
+    
     public static Image getImage(final String name) {
-        URL url;
+        URL url = ClassLoader.getSystemResource(name);
+        ImageIcon imageIcon = new ImageIcon(url);
 
-        url = ResourceManager.class.getResource(name);
-
-        java.awt.Toolkit toolKit = java.awt.Toolkit.getDefaultToolkit();
-
-        return toolKit.getImage(url);
+        return imageIcon.getImage();
     }
 }

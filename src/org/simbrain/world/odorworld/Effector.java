@@ -27,7 +27,7 @@ public class Effector implements ConsumingAttribute<Double> {
     /**
      * {@inheritDoc}
      */
-    public String getAttributeDescription() {
+    public String getName() {
         return name;
     }
 
